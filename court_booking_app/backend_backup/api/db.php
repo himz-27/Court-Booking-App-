@@ -12,8 +12,9 @@ function respond($code, $data) {
 }
 
 function db() {
-    // Database file lives in this same folder; .htaccess blocks direct download.
-    $pdo = new PDO('sqlite:' . __DIR__ . '/court.db');
+    $dir = __DIR__ . '/../private';
+    if (!is_dir($dir)) mkdir($dir, 0775, true);
+    $pdo = new PDO('sqlite:' . $dir . '/court.db');
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
     $pdo->exec('PRAGMA foreign_keys = ON');
@@ -33,15 +34,6 @@ function db() {
         created_at TEXT NOT NULL,
         FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
     )");
-
-    // Controlled setup: the second role (court_admin) is created here by the
-    // backend, never through public registration. Runs once; skipped if it exists.
-    $st = $pdo->prepare('SELECT 1 FROM users WHERE email = ?');
-    $st->execute(['admin@courtbook.test']);
-    if (!$st->fetch()) {
-        $st = $pdo->prepare('INSERT OR IGNORE INTO users (name, email, password_hash, role, created_at) VALUES (?, ?, ?, ?, ?)');
-        $st->execute(['Court Admin', 'admin@courtbook.test', password_hash('Admin12345', PASSWORD_DEFAULT), 'court_admin', gmdate('Y-m-d H:i:s')]);
-    }
     return $pdo;
 }
 
