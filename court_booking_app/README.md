@@ -1,94 +1,163 @@
-# CourtBook – Sports Court Booking App
+# CourtBook – Sports Court Booking System
 
 ## 1. Project Overview
 
-CourtBook is a Flutter mobile app made for Assignment 2 of the Application Programming course (A261 STTPK2143).
+CourtBook is a Flutter mobile application developed for Assignment 2 of the Application Programming course (A261 STTPK2143).
 
-It is a login system built with Flutter, PHP and SQLite. Users can register, log in, see their account details and log out. Court booking features will be added in the Final Project.
+The application implements a user authentication system using Flutter, PHP and SQLite. It supports two user roles: Court Admin and Player.
 
-## 2. Features
+Users can register, log in, view their account information and log out securely. Court booking features will be added in the Final Project.
 
-- Register with input checks (empty fields, email format, password length, matching passwords)
-- Log in with email and password
-- Two roles: Player and Court Admin
-- One shared dashboard that shows name, email and role from the server
-- Stay logged in when the app is reopened
-- Log out, which ends the session on the server
-- Splash screen that checks for a saved session
+## 2. System Features
+
+- User registration with input validation.
+- Secure user login.
+- Two user roles: Court Admin and Player.
+- Shared dashboard displaying user information.
+- Password hashing for secure password storage.
+- Authentication using secure session tokens.
+- Persistent login while the session remains valid.
+- Profile retrieval through a protected API.
+- Logout with server-side session invalidation.
+- Splash screen that checks for a saved session.
 
 ## 3. User Roles
 
 | Role | Description |
 | --- | --- |
-| Player | A normal user who registers in the app |
-| Court Admin | Created by a backend setup script, never by public registration |
+| Court Admin | An administrator account created through a controlled backend setup script. |
+| Player | A regular user who can register through the mobile application. |
+
+Both roles use the same login interface and dashboard.
 
 ## 4. Technologies Used
 
 | Technology | Purpose |
 | --- | --- |
-| Flutter / Dart | Mobile app |
-| PHP | Backend REST API |
-| SQLite | Database |
-| UUM StudentWebHost | Hosts the PHP backend and database |
-| GitHub | Source code |
+| Flutter | Mobile application development |
+| Dart | Application programming language |
+| PHP | Backend API development |
+| SQLite | Database management |
+| XAMPP | Local PHP development and testing |
+| UUM StudentWebHost | Hosted PHP backend and SQLite database |
+| GitHub | Source code management |
 
-## 5. Database
+## 5. Database Design
 
-The database file is `court.db`. It is created automatically by `db.php` the first time the API runs.
+The application uses an SQLite database named `court.db`. It is created automatically by `db.php` the first time the API runs.
 
-**users**: id, name, email (unique), password_hash, role, created_at
+### Users Table
 
-**sessions**: id, user_id, token_hash, expires_at, created_at
-
-## 6. API Endpoints
-
-| File | Method | Purpose |
+| Column | Data Type | Description |
 | --- | --- | --- |
-| register.php | POST | Register a new Player |
-| login.php | POST | Check login details and return a session token |
-| profile.php | GET | Return the logged-in user's details (needs the token) |
-| logout.php | POST | End the session |
+| id | INTEGER | Primary key |
+| name | TEXT | User's name |
+| email | TEXT | Unique email address |
+| password_hash | TEXT | Hashed password |
+| role | TEXT | User role (`player` or `court_admin`) |
+| created_at | TEXT | Account creation timestamp |
 
-## 7. How to Run
+### Authentication Sessions Table
 
-1. Clone the repository and open the folder.
-2. Install packages:
-   ```
-   flutter pub get
-   ```
-3. Open `lib/config.dart` and set `apiBaseUrl` to your backend address.
-4. Run the app:
-   ```
-   flutter run
-   ```
+| Column | Data Type | Description |
+| --- | --- | --- |
+| id | INTEGER | Primary key |
+| user_id | INTEGER | References users table |
+| token_hash | TEXT | Hashed authentication token |
+| expires_at | TEXT | Session expiration time |
+| created_at | TEXT | Session creation timestamp |
 
-## 8. Backend Setup
+## 6. Backend API Endpoints
 
-1. Upload the files in `backend_backup/api` to a PHP host as `court_booking/api`.
-2. The host must support PHP with PDO SQLite.
-3. Run the admin setup script once to create the Court Admin account, then delete it from the server.
-4. Make sure the database file cannot be downloaded from the web.
+The PHP backend provides the following endpoints:
 
-Note: the hosted backend only works on the UUM campus Wi-Fi.
+| PHP File | HTTP Method | Purpose |
+| --- | --- | --- |
+| register.php | POST | Register a new Player account |
+| login.php | POST | Authenticate a user and generate a session token |
+| profile.php | GET | Retrieve authenticated user information |
+| logout.php | POST | Invalidate the authentication session |
 
-## 9. Security
+All authentication operations are handled through the PHP API.
 
-- Passwords are hashed with `password_hash()` and checked with `password_verify()`
-- Prepared statements are used for all database queries
-- Session tokens are made with `random_bytes()` and only their SHA-256 hash is stored
-- Sessions expire after seven days
-- Registration always gives the Player role
-- The token is kept on the phone with `flutter_secure_storage`
+## 7. Installation and Setup
 
-## 10. Build the APK
+### Requirements
+
+- Flutter SDK
+- Dart SDK
+- Android Studio or Visual Studio Code
+- PHP with PDO SQLite support
+
+### Step 1: Clone the Repository
+
+```
+git clone https://github.com/himz-27/Court-Booking-App-.git
+```
+
+### Step 2: Open the Project
+
+```
+cd Court-Booking-App-/court_booking_app
+```
+
+### Step 3: Install Flutter Dependencies
+
+```
+flutter pub get
+```
+
+### Step 4: Configure the API URL
+
+Open `lib/config.dart` and set `apiBaseUrl` to the address of the deployed PHP backend.
+
+### Step 5: Run the Application
+
+```
+flutter run
+```
+
+## 8. Backend and Database Setup
+
+1. Deploy the PHP files from `backend_backup/api` to a PHP-supported web hosting environment as `court_booking/api`.
+2. Ensure the PHP environment supports PDO SQLite.
+3. The database is created automatically by `db.php` on the first request.
+4. Run the admin setup script once to create the Court Admin account, then delete it from the server.
+5. Make sure the database file cannot be downloaded from the web.
+6. Configure the Flutter API base URL to match the backend deployment address.
+
+**Hosting note:** This project uses UUM StudentWebHost. Access to the hosted backend requires connection to UUM campus Wi-Fi.
+
+## 9. Security Implementation
+
+- Passwords are stored using PHP `password_hash()`.
+- Password verification uses `password_verify()`.
+- Prepared SQL statements are used to prevent SQL injection.
+- Session tokens are generated using `random_bytes()`.
+- Authentication tokens are stored as SHA-256 hashes in the database.
+- Session expiration is set to seven days.
+- Public registration automatically assigns the Player role.
+- The Court Admin account is provisioned through a controlled backend process.
+- The session token is kept on the device using `flutter_secure_storage`.
+
+## 10. Release APK
+
+The Android release APK is generated using:
 
 ```
 flutter build apk --release
 ```
 
-The file is at `build/app/outputs/flutter-apk/app-release.apk`.
+APK output location:
+
+```
+build/app/outputs/flutter-apk/app-release.apk
+```
 
 ## 11. Testing
 
-Tested on an Android phone against the hosted backend: registration, duplicate email, invalid input, login, wrong password, both roles, reopening the app, profile without a token, and logout.
+The application was tested on an Android device using the release APK.
+
+Testing covered registration, duplicate email validation, invalid input, login, incorrect credentials, Court Admin and Player roles, profile retrieval, persistent sessions and logout.
+
+The application was also tested against the hosted UUM StudentWebHost backend.
